@@ -1,0 +1,98 @@
+REACT PROPS - Quick Revision Notes
+================================================================================
+
+WHAT ARE PROPS?
+- Short for "properties"
+- Way to pass data from PARENT component to CHILD component
+- Props are READ-ONLY (child cannot modify them)
+- Flow is ONE-WAY: Parent → Child (unidirectional data flow)
+
+
+SYNTAX
+--------------------------------------------------------------------------------
+
+Parent passes:
+   <Card username="Manas" age={20} myArr={[1,2,3]} />
+
+Child receives (2 ways):
+
+   // Way 1: props object
+   function Card(props) {
+       console.log(props.username);  // "Manas"
+       console.log(props.age);       // 20
+   }
+
+   // Way 2: Destructuring (cleaner ✅)
+   function Card({ username, age, myArr }) {
+       console.log(username);  // "Manas"
+   }
+
+
+WHAT CAN YOU PASS AS PROPS?
+--------------------------------------------------------------------------------
+   <Card
+       name="Manas"              // String
+       age={20}                  // Number
+       isActive={true}           // Boolean
+       myArr={[1, 2, 3]}        // Array
+       myObj={{ key: "value" }}  // Object (note double {{ }})
+       onClick={handleClick}     // Function
+   />
+
+
+DEFAULT VALUES
+--------------------------------------------------------------------------------
+If a prop is not passed, you can set a default:
+
+   function Card({ username = "Guest", myArr = [0, 1, 2] }) {
+       // username will be "Guest" if parent doesn't pass it
+   }
+
+OR use || inside JSX:
+   <h5>{username || "Default Username"}</h5>
+
+
+PROPS vs STATE
+--------------------------------------------------------------------------------
+   Props                          State
+   ─────                          ─────
+   Passed from parent             Defined inside component
+   Read-only in child             Can be updated with setState
+   Child can't change them        Component controls its own state
+
+
+KEY RULES
+--------------------------------------------------------------------------------
+1. Props are IMMUTABLE — never do: props.name = "New"  ❌
+2. Use destructuring for cleaner code
+3. Always pass dynamic values inside { curly braces }
+4. Strings can be passed without braces: username="Manas"
+5. Everything else needs braces: age={20}, arr={[1,2]}
+
+
+FROM YOUR PROJECT (03tailwindProps)
+--------------------------------------------------------------------------------
+
+App.jsx (Parent):
+   <Card username="Manas" myArr={[1,2,3]} />
+   <Card someObj={myObj} myArr={arr} />
+
+Card.jsx (Child):
+   function Card({ username, someObj, myArr = [0, 1, 2] }) {
+       // username → "Manas" (first card), undefined (second card)
+       // myArr   → [1,2,3] (first card), [1,2,3,4,5] (second card)
+       // someObj → undefined (first card), {name,age,city} (second card)
+   }
+
+   Then used in JSX:
+   <h5>{username || "Default Username"}</h5>
+   // Shows "Manas" if passed, otherwise "Default Username"
+
+
+SUMMARY
+--------------------------------------------------------------------------------
+✅ Props = data passed from parent to child
+✅ Destructure props for clean code
+✅ Set default values for optional props
+✅ Props are read-only — never mutate them
+✅ Strings without braces, everything else with { }

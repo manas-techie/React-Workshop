@@ -1,0 +1,127 @@
+================================================================================
+                  CUSTOM REACT - HOW REACT WORKS UNDER THE HOOD
+================================================================================
+
+GOAL OF THIS PROJECT
+--------------------------------------------------------------------------------
+Build a mini version of React's rendering system from scratch using plain
+JavaScript. No libraries — just vanilla JS and the DOM API.
+This helps you understand what React.createElement() and ReactDOM.render()
+actually do behind the scenes.
+
+
+THE BIG PICTURE (3 Steps)
+--------------------------------------------------------------------------------
+1. Describe the UI as a plain JavaScript OBJECT  (like React.createElement does)
+2. Write a RENDER function that reads that object and creates real DOM elements
+3. Append the DOM element into a container (like ReactDOM.render does)
+
+   JS Object  →  customRender()  →  Real DOM on the page
+
+
+STEP 1: REACT ELEMENT = PLAIN OBJECT
+--------------------------------------------------------------------------------
+In real React, JSX like <a href="...">Click</a> gets converted into an object.
+We skip JSX and write that object directly:
+
+   const reactElement = {
+       type: 'a',                              // what HTML tag to create
+       props: {                                 // attributes for that tag
+           href: 'https://google.com',
+           target: '_blank'
+       },
+       children: 'Click me to visit Google'     // text inside the tag
+   };
+
+This object is a BLUEPRINT — it describes WHAT to render, not HOW.
+
+KEY INSIGHT: React elements are just plain objects. JSX is syntactic sugar
+that compiles down to objects like this (via React.createElement).
+
+
+STEP 2: customRender() — THE RENDER FUNCTION
+--------------------------------------------------------------------------------
+This function reads the blueprint object and creates actual DOM elements:
+
+   function customRender(reactElement, container) {
+       // 1. Create the DOM element based on 'type'
+       const domElement = document.createElement(reactElement.type);
+
+       // 2. Set the inner content (children)
+       domElement.innerHTML = reactElement.children;
+
+       // 3. Loop through all props and set them as attributes
+       for (const prop in reactElement.props) {
+           if (prop !== 'children') {
+               domElement.setAttribute(prop, reactElement.props[prop]);
+           }
+       }
+
+       // 4. Append to the container
+       container.appendChild(domElement);
+   }
+
+WHAT EACH LINE DOES:
+   document.createElement('a')     → creates <a></a>
+   domElement.innerHTML = '...'    → puts text inside: <a>Click me</a>
+   setAttribute('href', '...')     → adds attribute: <a href="https://google.com">
+   container.appendChild(...)      → puts the element on the page
+
+
+WHY LOOP THROUGH PROPS?
+   The hardcoded version would be:
+       domElement.setAttribute('href', reactElement.props.href);
+       domElement.setAttribute('target', reactElement.props.target);
+
+   Problem: You'd need to manually write a line for EVERY prop.
+   Solution: Loop through all props dynamically with for...in.
+   This way it works no matter how many or which props you pass.
+
+   The check `if (prop !== 'children')` prevents setting "children" as an
+   HTML attribute — children is content, not an attribute.
+
+
+STEP 3: MOUNT IT
+--------------------------------------------------------------------------------
+   const mainContainer = document.getElementById('root');
+   customRender(reactElement, mainContainer);
+
+   - Grab the <div id="root"> from HTML
+   - Call customRender to build and inject the element into it
+
+   Final HTML on page:
+   <div id="root">
+       <a href="https://google.com" target="_blank">Click me to visit Google</a>
+   </div>
+
+
+HOW THIS MAPS TO REAL REACT
+--------------------------------------------------------------------------------
+   Custom React                    Real React
+   ─────────────────               ─────────────────
+   reactElement object       →     React.createElement('a', {href:...}, 'Click')
+                                   (or JSX: <a href="...">Click</a>)
+   customRender()            →     ReactDOM.render() / root.render()
+   document.getElementById        Same — targets <div id="root">
+     ('root')
+
+
+WHAT REAL REACT DOES EXTRA (that we skipped)
+--------------------------------------------------------------------------------
+1. Virtual DOM      - Keeps a copy of the DOM in memory for fast diffing
+2. Reconciliation   - Compares old vs new virtual DOM, updates only what changed
+3. Component model  - Functions/classes that return elements
+4. State & Hooks    - useState, useEffect, etc.
+5. Event system     - Synthetic events with delegation
+6. Batching         - Groups multiple updates into one re-render
+7. Nested children  - Real React handles trees of elements, not just text
+
+
+KEY TAKEAWAYS
+--------------------------------------------------------------------------------
+✅ React elements are just JavaScript objects describing UI
+✅ JSX compiles down to these objects (React.createElement)
+✅ Rendering = reading the object → creating DOM nodes → appending to page
+✅ Props are set as HTML attributes using setAttribute()
+✅ The "root" div is the entry point where React mounts everything
+✅ Real React adds Virtual DOM, diffing, and state on top of this basic idea

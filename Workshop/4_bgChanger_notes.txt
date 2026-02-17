@@ -1,0 +1,43 @@
+04bgChanger - Quick Revision Notes
+================================================================================
+
+WHAT IT DOES: Click a button → background color of the page changes.
+
+CORE CONCEPT: useState + inline style + onClick
+--------------------------------------------------------------------------------
+   const [color, setColor] = useState("olive");
+   - State holds the current background color as a string
+   - setColor("red") updates state → triggers re-render → new color applied
+
+APPLYING DYNAMIC STYLE:
+   <div style={{ backgroundColor: color }}>
+   - Inline style reads the 'color' state variable
+   - On re-render, new color value = new background
+
+BUTTON HANDLER:
+   <button onClick={() => setColor("red")}>Red</button>
+   - Arrow function wraps setColor so it runs ONLY on click
+
+⚠️  WHY NOT onClick={setColor("red")}?
+   - This CALLS setColor immediately during render
+   - Causes: render → state change → re-render → infinite loop 💀
+   - Fix: wrap in arrow function → onClick={() => setColor("red")}
+   - onClick expects a FUNCTION REFERENCE, not a function CALL
+
+TAILWIND CLASSES USED:
+   w-full h-screen       → full width & viewport height
+   duration-200          → smooth 200ms color transition
+   fixed bottom-12       → button bar fixed at bottom
+   rounded-3xl / full    → rounded corners on bar / buttons
+
+FLOW:
+   1. App renders with backgroundColor = "olive"
+   2. User clicks "Red" → setColor("red") called
+   3. State updates → re-render → style={{ backgroundColor: "red" }}
+   4. Page background changes to red
+
+KEY TAKEAWAYS:
+   ✅ useState for tracking dynamic values
+   ✅ style={{ }} for inline dynamic CSS in React
+   ✅ Always wrap setState in arrow function inside onClick
+   ✅ duration-200 gives smooth transition (Tailwind)

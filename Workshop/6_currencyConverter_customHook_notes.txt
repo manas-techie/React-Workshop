@@ -1,0 +1,146 @@
+========================================================
+   06 - CURRENCY CONVERTER (Custom Hook Project Notes)
+========================================================
+
+>> What This Project Does:
+   - Converts one currency to another (e.g., USD to INR).
+   - Fetches live exchange rates from an API.
+   - Has a swap button to quickly flip the currencies.
+
+========================================================
+>> FILES & THEIR ROLES:
+========================================================
+
+1. useCurrencyInfo.js  (Custom Hook - The Star of this project!)
+2. InputBox.jsx        (Reusable Component for input + currency dropdown)
+3. index.js            (Exports InputBox for cleaner imports)
+4. App.jsx             (Main App - ties everything together)
+
+========================================================
+>> CUSTOM HOOK — useCurrencyInfo(currency)
+========================================================
+
+Location: src/hooks/useCurrencyInfo.js
+
+What is a Custom Hook?
+   - A normal JavaScript function that starts with "use"
+   - It can use other React hooks inside it (useState, useEffect, etc.)
+   - Purpose: To extract reusable logic OUT of components
+   - Think of it as: "I need this logic in multiple places, let me make a hook"
+
+How useCurrencyInfo works (step by step):
+   1. It takes a currency name as input (e.g., "usd")
+   2. Creates a state variable `data` (initially empty {})
+   3. useEffect runs whenever the `currency` value changes
+   4. Inside useEffect, it fetches exchange rates from API:
+      URL: https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{currency}.json
+   5. API returns something like: { "usd": { "inr": 83.5, "eur": 0.92, ... } }
+   6. It stores res[currency] in `data` → so data = { "inr": 83.5, "eur": 0.92, ... }
+   7. Returns `data` to whoever called the hook
+
+Why Custom Hook here?
+   - The API fetching logic is separated from the UI
+   - If tomorrow you need currency data in another component, just call useCurrencyInfo("inr") — done!
+   - Keeps App.jsx clean and focused on rendering
+
+========================================================
+>> FLOW OF THE APP (Easy Explanation)
+========================================================
+
+Step 1: App Loads
+   - Default states: amount=0, from="usd", to="inr"
+   - useCurrencyInfo("usd") is called
+   - Hook fetches USD exchange rates from API
+   - Returns data like { "inr": 83.5, "eur": 0.92, "gbp": 0.79, ... }
+
+Step 2: options = Object.keys(currencyInfo)
+   - Extracts all currency names → ["inr", "eur", "gbp", ...]
+   - These become the dropdown options in both InputBox components
+
+Step 3: User enters an amount (say 100) in the "From" InputBox
+   - onAmountChange fires → setAmount(100)
+
+Step 4: User clicks "Convert USD to INR" button
+   - Form submits → convert() runs
+   - convert() does: setConvertedAmount(100 * currencyInfo["inr"])
+   - If 1 USD = 83.5 INR → convertedAmount = 8350
+   - The "To" InputBox shows 8350
+
+Step 5: User clicks "Swap"
+   - swap() runs:
+     * from ↔ to are swapped (usd→inr, inr→usd)
+     * amount ↔ convertedAmount are swapped
+   - Since `from` changed, useCurrencyInfo re-runs with new currency
+   - New exchange rates are fetched automatically (useEffect dependency!)
+
+========================================================
+>> InputBox COMPONENT
+========================================================
+
+Location: src/components/InputBox.jsx
+
+- A reusable component used TWICE in App (once for "From", once for "To")
+- Props it receives:
+    label           → "From" or "To"
+    amount          → the number to display
+    onAmountChange  → function to update amount in parent
+    onCurrencyChange→ function to update selected currency in parent
+    currencyOptions → array of currency names for dropdown
+    selectCurrency  → currently selected currency
+    amountDisable   → if true, input is read-only (used for "To" box)
+
+- Uses useId() hook to generate unique ID for the label-input connection
+  (accessibility best practice)
+
+========================================================
+>> KEY CONCEPTS USED
+========================================================
+
+1. Custom Hook (useCurrencyInfo)
+   → Separates data-fetching logic from UI
+
+2. useState
+   → Manages: amount, convertedAmount, from, to
+
+3. useEffect
+   → Runs API call whenever selected currency changes
+
+4. useId
+   → Generates unique IDs for form accessibility
+
+5. Props & Component Reusability
+   → Same InputBox component used for both "From" and "To"
+
+6. Controlled Components
+   → Input values are controlled by React state
+
+7. Lifting State Up
+   → State lives in App.jsx, passed down to InputBox via props
+
+========================================================
+>> SIMPLE DIAGRAM
+========================================================
+
+  App.jsx
+    |
+    |--- useCurrencyInfo(from) → fetches API → returns exchange rates
+    |
+    |--- <InputBox label="From" />   ← User types amount here
+    |       ↑ props: amount, currencyOptions, onAmountChange, onCurrencyChange
+    |
+    |--- <Swap Button>               ← Flips from ↔ to
+    |
+    |--- <InputBox label="To" />     ← Shows converted amount (disabled input)
+    |       ↑ props: convertedAmount, currencyOptions, onCurrencyChange
+    |
+    |--- <Convert Button>            ← Triggers: amount * exchangeRate
+
+========================================================
+>> ONE-LINE SUMMARY
+========================================================
+
+"useCurrencyInfo is a custom hook that fetches live exchange rates 
+ from an API whenever the source currency changes, keeping the 
+ data-fetching logic cleanly separated from the UI in App.jsx."
+
+========================================================
