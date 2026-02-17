@@ -1,0 +1,262 @@
+========================================================
+   08 - MINI CONTEXT (Context API Project Notes)
+========================================================
+
+>> What is Context API? (Simple Explanation)
+========================================================
+
+   Context API is a way to share data between components
+   WITHOUT passing props at every level.
+
+   Why use it?
+   Imagine: App → Parent → Child → GrandChild
+   If GrandChild needs data from App, you have to pass it
+   through Parent and Child even though they DON'T need it.
+   This is called "PROP DRILLING" — messy and annoying.
+
+   Context API lets GrandChild GRAB the data directly
+   from App — skipping the middle components.
+
+   Think of it like this:
+   • Props   = handing a letter person to person in a chain
+   • Context = putting the letter on a NOTICE BOARD
+               — anyone can read it directly
+
+   3 simple steps:
+   1. CREATE the notice board   → React.createContext()
+   2. PIN data on it            → <Context.Provider value={data}>
+   3. READ data from it         → useContext(Context) in any component
+
+   That's it. Context API = a shared notice board for
+   your React components.
+
+   ── DIAGRAM: Props (Prop Drilling) ──
+
+   WITHOUT Context — passing props through every level:
+
+       ┌─────────────┐
+       │     App      │  ← data lives here
+       │  (user data) │
+       └──────┬───────┘
+              │ passes props ↓
+       ┌──────┴───────┐
+       │   Parent      │  ← doesn't need data, just passes it
+       └──────┬───────┘
+              │ passes props ↓
+       ┌──────┴───────┐
+       │    Child      │  ← doesn't need data, just passes it
+       └──────┬───────┘
+              │ passes props ↓
+       ┌──────┴───────┐
+       │  GrandChild   │  ← finally uses the data!
+       └──────────────┘
+
+       Problem: Parent & Child are just middlemen 😩
+
+
+   ── DIAGRAM: Context API (No Drilling) ──
+
+   WITH Context — any component grabs data directly:
+
+       ┌──────────────────────────────────────────┐
+       │         CONTEXT (Notice Board)            │
+       │     ┌──────────────────────────┐          │
+       │     │   data = {user, setUser} │          │
+       │     └──────────────────────────┘          │
+       │                                           │
+       │   ┌─────────┐                             │
+       │   │   App    │                             │
+       │   └─────────┘                             │
+       │        │                                  │
+       │   ┌────┴─────┐                            │
+       │   │  Parent   │  ← skipped! no props      │
+       │   └────┬──────┘                            │
+       │   ┌────┴─────┐                            │
+       │   │  Child    │  ← skipped! no props      │
+       │   └────┬──────┘                            │
+       │   ┌────┴──────────┐                       │
+       │   │  GrandChild    │──→ useContext()       │
+       │   │  (reads data   │    grabs directly!    │
+       │   │   from board)  │                       │
+       │   └───────────────┘                       │
+       └──────────────────────────────────────────┘
+
+       Solution: GrandChild reads from the notice board
+       directly — no middlemen needed! ✅
+
+========================================================
+
+>> What This Project Does:
+   - A simple Login + Profile app
+   - User types username & password in Login component
+   - Profile component shows "Welcome {username}" 
+   - Login & Profile are SIBLINGS — they share data using Context API
+     (no prop drilling needed!)
+
+========================================================
+>> THE PROBLEM CONTEXT API SOLVES
+========================================================
+
+   Without Context:
+     App has data → passes to Child1 → passes to Child2 → passes to Child3
+     This is called "PROP DRILLING" — ugly and hard to maintain
+
+     App (state lives here)
+      ├── Login (needs setUser)    ← pass as prop
+      └── Profile (needs user)    ← pass as prop
+
+   With Context:
+     Data sits in a "global store" → ANY component can access it directly
+     No need to pass props through every level
+
+     UserContext (global store)
+      ├── Login → grabs setUser directly
+      └── Profile → grabs user directly
+
+========================================================
+>> FILES & THEIR ROLES
+========================================================
+
+   1. UserContext.js         → Creates the Context (the empty box)
+   2. UserContextProvider.jsx → Fills the box with data + wraps children
+   3. Login.jsx              → Writes data TO the context (setUser)
+   4. Profile.jsx            → Reads data FROM the context (user)
+   5. App.jsx                → Wraps everything inside the Provider
+
+========================================================
+>> 3-STEP PROCESS TO USE CONTEXT API
+========================================================
+
+   STEP 1: CREATE the Context
+   ──────────────────────────
+   File: context/UserContext.js
+
+     import React from "react";
+     const UserContext = React.createContext();
+     export default UserContext;
+
+   - React.createContext() creates an empty context object
+   - Think of it as creating an empty container/box
+   - This file is very small — just creates and exports
+
+
+   STEP 2: PROVIDE the Context (fill the box with data)
+   ─────────────────────────────────────────────────────
+   File: context/UserContextProvider.jsx
+
+     const UserContextProvider = ({children}) => {
+         const [user, setUser] = React.useState(null);
+         return (
+             <UserContext.Provider value={{user, setUser}}>
+                 {children}
+             </UserContext.Provider>
+         )
+     };
+
+   - Creates the actual state (user, setUser)
+   - Wraps children inside <UserContext.Provider>
+   - value={{user, setUser}} → this is what's shared with all children
+   - {children} → whatever components are wrapped inside it
+
+   Used in App.jsx:
+     <UserContextProvider>    ← everything inside can access user & setUser
+       <Login/>
+       <Profile/>
+     </UserContextProvider>
+
+
+   STEP 3: CONSUME the Context (take data out of the box)
+   ──────────────────────────────────────────────────────
+   Use useContext() hook in any child component:
+
+   In Login.jsx (WRITES to context):
+     const {setUser} = useContext(UserContext);
+     // On submit: setUser({username, password})
+
+   In Profile.jsx (READS from context):
+     const {user} = useContext(UserContext);
+     // Displays: Welcome {user.username}
+
+========================================================
+>> FLOW OF THE APP (Step by Step)
+========================================================
+
+   Step 1: App loads
+     → UserContextProvider wraps Login & Profile
+     → user = null, setUser = function
+     → Profile sees user is null → shows "please login"
+
+   Step 2: User types "manas" in username, "1234" in password
+     → Local state in Login updates (useState)
+
+   Step 3: User clicks "Submit"
+     → handleSubmit runs
+     → setUser({username: "manas", password: "1234"})
+     → This updates the CONTEXT state (not just Login's state)
+
+   Step 4: Context state changes → React re-renders consumers
+     → Profile re-renders
+     → user is now {username: "manas", password: "1234"}
+     → Shows "Welcome manas"
+
+   KEY INSIGHT: Login never passed any prop to Profile!
+   They communicated through the shared Context.
+
+========================================================
+>> SIMPLE DIAGRAM
+========================================================
+
+   ┌─────────────────────────────────────────────┐
+   │          UserContextProvider                 │
+   │    (holds state: user, setUser)              │
+   │                                              │
+   │    ┌──────────────┐  ┌──────────────────┐    │
+   │    │   Login       │  │   Profile         │   │
+   │    │               │  │                   │   │
+   │    │ useContext()  │  │ useContext()      │   │
+   │    │ → gets setUser│  │ → gets user       │   │
+   │    │               │  │                   │   │
+   │    │ setUser({..}) │──│→ user.username    │   │
+   │    │   (writes)    │  │   (reads)         │   │
+   │    └──────────────┘  └──────────────────┘    │
+   └─────────────────────────────────────────────┘
+
+========================================================
+>> IMPORTANT THINGS TO REMEMBER
+========================================================
+
+   1. createContext() → just creates an empty context
+   2. <Context.Provider value={...}> → fills it with data
+   3. useContext(Context) → consumes/reads that data
+   4. Any component INSIDE the Provider can access the value
+   5. Components OUTSIDE the Provider CANNOT access it
+   6. When context value changes → ALL consuming components re-render
+
+   Common pattern:
+     context/
+       UserContext.js          ← Step 1: Create
+       UserContextProvider.jsx ← Step 2: Provide
+     components/
+       Login.jsx               ← Step 3: Consume (write)
+       Profile.jsx             ← Step 3: Consume (read)
+
+========================================================
+>> CONTEXT API vs PROPS
+========================================================
+
+   | Props                          | Context API                    |
+   |--------------------------------|--------------------------------|
+   | Pass data parent → child       | Share data with ANY component  |
+   | Need to drill through levels   | Direct access, no drilling     |
+   | Good for 1-2 levels            | Good for deeply nested or      |
+   |                                | sibling components             |
+   | Simple and explicit            | More setup (3 steps)           |
+
+========================================================
+>> ONE-LINE SUMMARY
+========================================================
+
+   "Context API = Create a context, Provide it with data at the top,
+    and Consume it with useContext() anywhere inside the Provider."
+
+========================================================
