@@ -30,12 +30,12 @@ function App() {
   }, [length, numberAllowed, charAllowed, setPassword]);
 
   const copyPasswordToClipboard = useCallback(() => {
-    if(passwordRef.current) {
+    if (passwordRef.current) {
       passwordRef.current.select();
       passwordRef.current.setSelectionRange(0, 20);
-      }
+    }
     window.navigator.clipboard.writeText(password);
-  },[password]);
+  }, [password]);
 
   useEffect(() => {
     passwordGenerator();
@@ -54,7 +54,10 @@ function App() {
             readOnly
             ref={passwordRef}
           />
-          <button  onClick={copyPasswordToClipboard} className="outline-none bg-blue-700  text-white w-16 h-9 m-auto rounded">
+          <button
+            onClick={copyPasswordToClipboard}
+            className="outline-none bg-blue-700  text-white w-16 h-9 m-auto rounded"
+          >
             copy
           </button>
         </div>

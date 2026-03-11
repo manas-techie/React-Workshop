@@ -211,6 +211,10 @@ COMMON MISTAKES
 
 ✅ Use useEffect or functional update to access new value
 
+useEffect(() => {
+  console.log(count); // This will show the new value after the update
+}, [count]); // Run this whenever 'count' changes
+
 
 ❌ Calling useState conditionally:
    if (condition) {

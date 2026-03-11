@@ -1,0 +1,42 @@
+=============================================================================
+REACT HOOKS & OPTIMIZATION REVISION: DSA PROBLEM TRACKER
+=============================================================================
+
+1. CORE HOOKS USED
+-----------------------------------------------------------------------------
+* useState: 
+  - Manages UI-triggering data. 
+  - Used for the global 'problems' array and local 'seconds' / 'isRunning' state.
+
+* useRef (Two distinct jobs):
+  1. DOM Reference: Attached to <input ref={inputRef}> to read form values directly, bypassing the need for state updates on every keystroke.
+  2. The "Secret Box": Stores the interval ID (timerRef.current = setInterval...). Updating a ref does NOT trigger a re-render, making it perfect for background data.
+
+* useEffect (The Synchronizer):
+  - Connects React state to outside browser APIs (like setInterval).
+  - THE CLEANUP FUNCTION: `return () => clearInterval(timerRef.current)`
+    - Why it's critical: Runs right before the component unmounts (is deleted) or before the effect re-runs. 
+    - Prevents "Zombie Timers" (memory leaks where hidden timers try to update deleted components) and stops React Strict Mode from creating double-speed timers.
+
+* useCallback:
+  - Caches a function definition in memory. 
+  - Why: In React, a new function is created on every render. useCallback ensures functions like `handleDelete` keep the same memory address (referential equality) so child components don't think they received a brand new prop.
+
+2. PERFORMANCE OPTIMIZATIONS
+-----------------------------------------------------------------------------
+* React.memo (The Memory Filter):
+  - Wraps a child component: `const ProblemItem = memo(...)`
+  - Does a "Shallow Comparison" of props. If the `problem` object and `onDelete` function haven't changed their memory addresses, it entirely skips re-rendering the child component, saving processing power.
+
+* Uncontrolled Forms vs. Controlled Forms:
+  - Controlled: `<input onChange={(e) => setState(e.target.value)}>` forces the whole component to re-render on EVERY single keystroke.
+  - Uncontrolled (Optimized): Using an HTML `<form onSubmit={...}>` with `useRef` to read the input ONLY when submitted. Kills keystroke re-renders completely.
+
+3. ARCHITECTURE & REACT RULES
+-----------------------------------------------------------------------------
+* The 'key' Prop in Lists:
+  - Acts as a Primary Key for mapped arrays: `<ProblemItem key={problem.id} />`
+  - Why it's critical: It gives elements a stable identity. Without unique keys, if you delete an item, React might just overwrite the data but keep the underlying component alive. This causes massive bugs, like a new DSA problem inheriting the timer of a deleted problem.
+  - Golden Rule: Never use the array `index` as a key for lists where items can be added, deleted, or reordered.
+
+=============================================================================
