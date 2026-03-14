@@ -7,6 +7,11 @@ import Input from "./Input";
 import Button from "./Button";
 import Select from "./Select";
 import PostCard from "./PostCard";
+import Login from "./Login";
+import RTE from "./RTE";
+import Signup from "./Signup";
+import PostForm from "./post-form/PostForm";
+import Protected from "./AuthLayout";
 
 
 
@@ -19,6 +24,10 @@ export {
     Input,
     Button,
     Select,
-    PostCard
-
+    PostCard,
+    Login,
+    RTE,
+    Signup,
+    PostForm,
+    Protected
 }
