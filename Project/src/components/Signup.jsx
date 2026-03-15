@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import authService from "../appwrite/auth.service";
 import { Link, useNavigate } from "react-router-dom";
 import { login as authLogin } from "../features/authSlice";
@@ -81,11 +81,9 @@ function Signup() {
                 required: true,
               })}
             />
-            <Button
-              children={"Create Account"}
-              type="submit"
-              className="w-full"
-            />
+            <Button type="submit" className="w-full">
+              Create Account
+            </Button>
           </div>
         </form>
       </div>

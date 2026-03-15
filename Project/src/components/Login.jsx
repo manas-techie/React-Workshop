@@ -64,6 +64,7 @@ function Login() {
                 },
               })}
             />
+            {/* TODO: understand the use of ref */}
             <Input
               label="Password: "
               type="password"

@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button, Input, Select, RTE } from "../index";
 import service from "../../appwrite/config.service";
@@ -6,21 +6,24 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 function PostForm({ post }) {
-  const { register, handleSubmit, watch, setValue, control, getValues } = useForm({
-    defaultValues: {
-      title: post?.title || "",
-      slug: post?.slug || "",
-      content: post?.content || "",
-      status: post?.status || "active",
-    },
-  });
+  const { register, handleSubmit, watch, setValue, control, getValues } =
+    useForm({
+      defaultValues: {
+        title: post?.title || "",
+        slug: post?.slug || "",
+        content: post?.content || "",
+        status: post?.status || "active",
+      },
+    });
 
   const navigate = useNavigate();
   const userData = useSelector((state) => state.auth.userData);
 
   const submitPost = async (data) => {
     if (post) {
-      const file = data.image[0] ? service.uploadFile(data.image[0]) : null;
+      const file = data.image[0]
+        ? await service.uploadFile(data.image[0])
+        : null;
 
       if (file) {
         service.deleteFile(post.featuredImage);
@@ -41,7 +44,7 @@ function PostForm({ post }) {
       const dbPost = await service.createPost({
         ...data,
         featuredImage: file ? file.$id : null,
-        authorId: userData.$id,
+        userId: userData.$id,
       });
 
       if (dbPost) {
@@ -64,7 +67,7 @@ function PostForm({ post }) {
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === "title") {
-        setValue("slug", slugTransform(value.title, { shouldValidate: true }));
+        setValue("slug", slugTransform(value.title), { shouldValidate: true });
       }
     });
 

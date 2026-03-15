@@ -28,8 +28,6 @@ export class Service {
                     status: status,
                     userId: userId
                 },
-                read: ["*"],
-                write: ["*"]
             });
         } catch (e) {
             console.error(e);
@@ -49,8 +47,6 @@ export class Service {
                     featuredImage: featuredImage,
                     status: status
                 },
-                read: ["*"],
-                write: ["*"]
             });
         } catch (e) {
             console.error(e);

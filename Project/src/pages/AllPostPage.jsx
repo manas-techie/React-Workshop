@@ -8,7 +8,7 @@ function AllPostPage() {
 
   useEffect(() => {
     service
-      .getPosts([])
+      .getPosts()
       .then((posts) => {
         if (posts) {
           setPosts(posts.documents);
@@ -25,8 +25,8 @@ function AllPostPage() {
         <div className="flex flex-wrap">
           {posts.length > 0 ? (
             posts.map((post) => (
-              <div key={post.$id} className="p-2 w-1">
-                <PostCard post={post} />
+              <div key={post.$id} className="p-2 w-1/4">
+                <PostCard {...post} />
               </div>
             ))
           ) : (
